@@ -1,0 +1,155 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: install-deps-stretch
+data:
+  install-deps-stretch.sh: |
+    #!/usr/bin/env bash
+    set -e
+    DIR=/tmp/install-deps.$$
+    trap "rm -fr $DIR" EXIT
+    mkdir -p $DIR
+    if test $(id -u) != 0 ; then
+        SUDO=sudo
+    fi
+    export LC_ALL=C # the following is vulnerable to i18n
+    
+    ARCH=`uname -m`
+    
+    function munge_ceph_spec_in {
+        # http://rpm.org/user_doc/conditional_builds.html
+        local OUTFILE=$1
+        sed -e 's/@//g' -e 's/%bcond_with make_check/%bcond_without make_check/g' < ceph.spec.in > $OUTFILE
+    }
+    
+    function ensure_decent_gcc_on_debian {
+        # point gcc to the one offered by g++-7 if the used one is not
+        # new enough
+    	if [ ! -f /usr/bin/gcc ]; then
+            $SUDO apt install -y gcc
+    	fi
+        local old=$(gcc -dumpversion)
+        local new=$1
+        local codename=$2
+        if dpkg --compare-versions $old ge 7.0; then
+            return
+        fi
+    
+        if [ ! -f /usr/bin/g++-${new} ]; then
+    	    $SUDO tee /etc/apt/sources.list.d/${codename}.list <<EOF
+    deb http://debian-archive.trafficmanager.net/debian/ $codename main
+    EOF
+            $SUDO tee /etc/apt/apt.conf.d/stable-as-default <<EOF
+    APT::Default-Release "stable";
+    EOF
+    	    $SUDO apt update
+    	    $SUDO apt upgrade -y
+    	    $SUDO apt install -t ${codename} -y g++
+        fi
+    }
+    
+    function version_lt {
+        test $1 != $(echo -e "$1\n$2" | sort -rV | head -n 1)
+    }
+    
+    source /etc/os-release
+    echo "Using apt to install dependencies"
+    $SUDO apt-get install -y devscripts equivs virtualenv
+    $SUDO apt-get install -y dpkg-dev
+    case "$VERSION" in
+        *stretch*)
+            ensure_decent_gcc_on_debian 7 buster
+            ;;
+        *)
+            $SUDO apt-get install -y gcc
+            ;;
+    esac
+    if ! test -r debian/control ; then
+        echo debian/control is not a readable file
+        exit 1
+    fi
+    touch $DIR/status
+    
+    control="debian/control"
+    case "$VERSION" in
+        *stretch*)
+            control="/tmp/control.$$"
+    		#grep -v babeltrace debian/control > $control
+    		grep -v valgrind debian/control > $control
+    		cp $control debian/control
+            ;;
+    esac
+    
+    # make a metapackage that expresses the build dependencies,
+    # install it, rm the .deb; then uninstall the package as its
+    # work is done
+    echo Y | $SUDO env DEBIAN_FRONTEND=noninteractive mk-build-deps --install --remove $control || exit 1
+    $SUDO env DEBIAN_FRONTEND=noninteractive apt -y remove ceph-build-deps
+    if [ ${VERSION_ID} -eq 9 ] ; then rm $control; fi
+    
+    function populate_wheelhouse() {
+        local install=$1
+        shift
+    
+        # although pip comes with virtualenv, having a recent version
+        # of pip matters when it comes to using wheel packages
+        # workaround of https://github.com/pypa/setuptools/issues/1042
+        pip --timeout 300 $install 'setuptools >= 0.8,< 36' 'pip >= 7.0' 'wheel >= 0.24' || return 1
+        if test $# != 0 ; then
+            pip --timeout 300 $install $@ || return 1
+        fi
+    }
+    
+    function activate_virtualenv() {
+        local top_srcdir=$1
+        local interpreter=$2
+        local env_dir=$top_srcdir/install-deps-$interpreter
+    
+        if ! test -d $env_dir ; then
+            # Make a temporary virtualenv to get a fresh version of virtualenv
+            # because CentOS 7 has a buggy old version (v1.10.1)
+            # https://github.com/pypa/virtualenv/issues/463
+            virtualenv ${env_dir}_tmp
+            ${env_dir}_tmp/bin/pip install --upgrade virtualenv
+            ${env_dir}_tmp/bin/virtualenv --python $interpreter $env_dir
+            rm -rf ${env_dir}_tmp
+    
+            . $env_dir/bin/activate
+            if ! populate_wheelhouse install ; then
+                rm -rf $env_dir
+                return 1
+            fi
+        fi
+        . $env_dir/bin/activate
+    }
+    
+    # use pip cache if possible but do not store it outside of the source
+    # tree
+    # see https://pip.pypa.io/en/stable/reference/pip_install.html#caching
+    mkdir -p install-deps-cache
+    top_srcdir=$(pwd)
+    export XDG_CACHE_HOME=$top_srcdir/install-deps-cache
+    wip_wheelhouse=wheelhouse-wip
+    
+    #
+    # preload python modules so that tox can run without network access
+    #
+    find . -name tox.ini | while read ini ; do
+        (
+            cd $(dirname $ini)
+            require=$(ls *requirements.txt 2>/dev/null | sed -e 's/^/-r /')
+            if test "$require" && ! test -d wheelhouse ; then
+                for interpreter in python2.7 python3 ; do
+                    type $interpreter > /dev/null 2>&1 || continue
+                    activate_virtualenv $top_srcdir $interpreter || exit 1
+                    populate_wheelhouse "wheel -w $wip_wheelhouse" $require || exit 1
+                done
+                mv $wip_wheelhouse wheelhouse
+            fi
+        )
+    done
+    
+    for interpreter in python2.7 python3 ; do
+        rm -rf $top_srcdir/install-deps-$interpreter
+    done
+    rm -rf $XDG_CACHE_HOME

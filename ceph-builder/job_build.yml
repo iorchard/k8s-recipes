@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ceph-builder
+spec:
+  template:
+    spec:
+      containers:
+      - name: ceph-builder
+        image: debian:stretch
+        command: ["/build/build.sh", "14.2.0"]
+        volumeMounts:
+        - name: build
+          mountPath: /build
+        - name: install-deps-stretch
+          mountPath: /install
+        - name: debs
+          mountPath: /debs
+      restartPolicy: Never
+      volumes:
+        - name: build
+          configMap:
+            name: build
+            defaultMode: 0755
+        - name: install-deps-stretch
+          configMap:
+            name: install-deps-stretch
+            defaultMode: 0755
+        - name: debs
+          hostPath:
+            path: /debs
+            type: Directory
+  backoffLimit: 1
