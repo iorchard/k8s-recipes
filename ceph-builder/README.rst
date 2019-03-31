@@ -1,30 +1,13 @@
 ceph-builder
 =============
 
-This is for ceph-builder recipes.
+This is ceph-builder recipes.
 
-Kubernetes recipe
-------------------
+Ceph does not support debian very well so I created my own ceph builder for
+debian.
 
-It builds ceph debian packages to be used in debian 9 stretch machine.
+There are two recipes.
 
-When job is completed, ceph debian packages are in /debs at the worker node
-where job runs. 
-
-It uses hostPath so every worker node should have /debs directory.
-
-To Build
-+++++++++
-
-Do the following order.::
-
-    kubectl apply -f cm_build.yml
-    kubectl apply -f cm_install_deps_stretch.yml
-    kubectl apply -f job_build.yml
-
-Building ceph takes a long time. 
-My kubernetes worker node is a virtual machine 
-with 8 cores, 32G RAM, 100G disk.
-It took one and a half hours to build on my server.
-
+* k8s: ceph debian packager builder for kubernetes
+* docker: ceph debian packager builder for docker
 
