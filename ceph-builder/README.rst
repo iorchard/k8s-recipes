@@ -4,7 +4,7 @@ ceph-builder
 This is ceph-builder recipes.
 
 Ceph does not support debian very well so I created my own ceph builder for
-debian.
+debian 9 (stretch).
 
 There are two recipes.
 
