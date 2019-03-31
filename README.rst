@@ -1,5 +1,5 @@
-Kubernetes Recipes
-==================
+Recipes
+========
 
 This repo is for all kinds of recipes such as kubernetes, docker, ansible, etc.
 
