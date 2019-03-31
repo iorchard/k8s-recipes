@@ -1,11 +1,10 @@
 Kubernetes Recipes
 ==================
 
-This repo is holding kubernetes manifest files that we use.
+This repo is for all kinds of recipes such as kubernetes, docker, ansible, etc.
 
 ceph-builder
 --------------
 
-Build ceph debian packages on debian stretch.
+Build ceph debian packages for debian 9 (stretch).
 
-It uses Job Workload.
