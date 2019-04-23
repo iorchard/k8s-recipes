@@ -1,0 +1,28 @@
+[all:vars]
+ansible_user=orchard
+ansible_become_method=sudo
+ansible_become_pass='{{ sudo_pass }}'
+
+[deployer:vars]
+venv="/home/{{ ansible_user }}/.envs/ansible"
+#ansible_python_interpreter="{{ venv }}/bin/python"
+ansible_python_interpreter=/usr/bin/python3.5
+
+[cluster:vars]
+ansible_ssh_pass='{{ ssh_pass }}'
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+ansible_python_interpreter=/usr/bin/python3
+
+[deployer]
+ceph-deployer	ansible_connection=local
+
+[controllers]
+ceph-admin[1:3]
+
+[workers]
+ceph[1:3]
+
+# ceph cluster
+[cluster:children]
+controllers
+workers

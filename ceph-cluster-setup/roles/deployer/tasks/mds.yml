@@ -1,0 +1,18 @@
+---
+# mds tasks.
+- name: Install ceph mds packages in {{ mds_servers }}.
+  command: |
+    ceph-deploy install --mds
+    --repo-url {{ repo_url }}
+    --gpg-url {{ gpg_url }}
+    {{ mds_servers }}
+  args:
+    chdir: /home/{{ ansible_user_id }}/{{ cluster_name }}
+  tags: mds_tasks
+
+- name: Deploy ceph mds on {{ mds_servers }}.
+  command: ceph-deploy mds create {{ mds_servers }}
+  args:
+    chdir: /home/{{ ansible_user_id }}/{{ cluster_name }}
+  tags: mds_tasks
+...

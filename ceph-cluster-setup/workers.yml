@@ -1,0 +1,7 @@
+---
+# worker master file.
+- hosts: workers
+  roles:
+    - common
+    - worker
+...

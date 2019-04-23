@@ -1,0 +1,46 @@
+---
+- name: Stop ceph.target on {{ osd[idx]['name'] }}
+  systemd:
+    name: ceph.target
+    state: stopped
+  ignore_errors: yes
+  become: yes
+  when: inventory_hostname == osd[idx]['name']
+
+- name: Deactivate vg on {{ osd[idx]['name'] }}
+  command: vgchange -an
+  become: yes
+  when: inventory_hostname == osd[idx]['name']
+
+- name: Remove PV for data on {{ osd[idx]['name'] }}
+  command: pvremove --force --force -y {{ item }}
+  loop: "{{ osd[idx]['data'] }}"
+  ignore_errors: yes
+  become: yes
+  when: inventory_hostname == osd[idx]['name']
+
+- name: Remove LV in {{ db_vg }} on {{ osd[idx]['name'] }}
+  lvol:
+    vg: "{{ db_vg }}"
+    lv: "{{ item }}"
+    state: absent
+    force: yes
+  loop: "{{ osd[idx]['db'] }}"
+  ignore_errors: yes
+  become: yes
+  when: inventory_hostname == osd[idx]['name']
+
+- name: Activate vg on {{ osd[idx]['name'] }}
+  command: vgchange -ay
+  become: yes
+  when: inventory_hostname == osd[idx]['name']
+
+- name: Create LV in {{ db_vg }} on {{ osd[idx]['name'] }}
+  lvol:
+    vg: "{{ db_vg }}"
+    lv: "{{ item }}"
+    size: "{{ (100 / osd[idx]['db']|length)|int  - 1 }}%VG"
+  loop: "{{ osd[idx]['db'] }}"
+  become: yes
+  when: inventory_hostname == osd[idx]['name']
+...

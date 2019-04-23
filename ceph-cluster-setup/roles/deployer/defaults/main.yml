@@ -1,0 +1,13 @@
+---
+# defaults file for deployer
+cluster_name: swrc-ceph
+public_network: 192.168.24.0/24
+cluster_network: 192.168.24.0/24
+repo_url: https://mirror.croit.io/debian-{{ ceph_release }}
+gpg_url: https://mirror.croit.io/keys/release.asc
+
+# MDS settings
+# pg_num for mds. (# of osds * 100 / replicas) = round up nearest power of two.
+# 12 * 100 / 3 = 400
+pg_num: 400
+fs_name: swrc-cephfs

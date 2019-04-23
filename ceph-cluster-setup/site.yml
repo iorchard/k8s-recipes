@@ -1,0 +1,6 @@
+---
+# master file to set up ceph cluster.
+- import_playbook: controllers.yml
+- import_playbook: workers.yml
+- import_playbook: deployer.yml
+...

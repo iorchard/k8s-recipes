@@ -1,0 +1,76 @@
+---
+# all variables.
+#ceph_release: nautilus
+ceph_release: mimic
+timezone: Asia/Seoul
+cluster_name: swrc-ceph
+public_network: 192.168.24.0/24
+ssh_pubkey: "~/.ssh/id_rsa.pub"
+mon:
+  - ceph-admin1
+  - ceph-admin2
+  - ceph-admin3
+mon_servers: "{{ mon | join(' ') }}"
+
+mds:
+  - ceph-admin1
+  - ceph-admin2
+mds_servers: "{{ mds | join(' ') }}"
+
+mgr:
+  - ceph-admin1
+  - ceph-admin3
+mgr_servers: "{{ mgr | join(' ') }}"
+
+# wal/db size should be 1% of osd size.
+# ex) 10G wal/db for 1T osd
+db_pv: 
+  - /dev/vdb
+db_vg: ceph-db_vg
+wal_pv: []
+wal_vg: ''
+
+
+osd:
+  - name: ceph1
+    data: 
+      - /dev/vdc
+      - /dev/vdd
+      - /dev/vde
+      - /dev/vdf
+    wal: []
+    db: 
+      - ceph-db-lv0
+      - ceph-db-lv1
+      - ceph-db-lv2
+      - ceph-db-lv3
+  - name: ceph2
+    data: 
+      - /dev/vdc
+      - /dev/vdd
+      - /dev/vde
+      - /dev/vdf
+    wal: []
+    db: 
+      - ceph-db-lv0
+      - ceph-db-lv1
+      - ceph-db-lv2
+      - ceph-db-lv3
+  - name: ceph3
+    data: 
+      - /dev/vdc
+      - /dev/vdd
+      - /dev/vde
+      - /dev/vdf
+    wal: []
+    db: 
+      - ceph-db-lv0
+      - ceph-db-lv1
+      - ceph-db-lv2
+      - ceph-db-lv3
+
+l_osd: "{{ osd | map(attribute='name')|list }}"
+osd_servers: "{{ l_osd | join(' ')  }}"
+
+all_servers: "{{ hostvars[inventory_hostname]['groups']['cluster']|join(' ') }}" 
+...

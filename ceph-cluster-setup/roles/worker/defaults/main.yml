@@ -1,0 +1,6 @@
+---
+# defaults file for worker
+worker_pre_pkgs:
+  - lvm2
+  - parted
+...

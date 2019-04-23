@@ -1,0 +1,18 @@
+---
+# manager tasks.
+- name: Install ceph mgr packages in {{ mgr_servers }}.
+  command: |
+    ceph-deploy install --mgr
+    --repo-url {{ repo_url }}
+    --gpg-url {{ gpg_url }}
+    {{ mgr_servers }}
+  args:
+    chdir: /home/{{ ansible_user_id }}/{{ cluster_name }}
+  tags: mgr_tasks
+
+- name: Deploy ceph mgr on {{ mgr_servers }}.
+  command: ceph-deploy mgr create {{ mgr_servers }}
+  args:
+    chdir: /home/{{ ansible_user_id }}/{{ cluster_name }}
+  tags: mgr_tasks
+...

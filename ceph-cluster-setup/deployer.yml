@@ -1,0 +1,7 @@
+---
+# deployer master file.
+- hosts: deployer
+  roles:
+    - common
+    - deployer
+...

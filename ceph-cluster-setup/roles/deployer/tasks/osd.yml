@@ -1,0 +1,19 @@
+---
+# osd tasks.
+- name: Install ceph osd packages in {{ osd_servers }}.
+  command: |
+    ceph-deploy install --osd
+        --repo-url {{ repo_url }}
+        --gpg-url {{ gpg_url }}
+        {{ osd_servers }}
+  args:
+    chdir: /home/{{ ansible_user_id }}/{{ cluster_name }}
+  tags: osd_tasks
+
+- name: Call osd_create.yml for each osd server.
+  include_tasks: osd_create.yml
+  loop: "{{ range(0, l_osd|length)|list }}"
+  loop_control:
+    loop_var: idx
+  tags: osd_tasks
+...

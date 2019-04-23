@@ -1,0 +1,121 @@
+---
+# tasks file for deployer
+- name: Install ceph-deploy.
+  pip:
+    name: ceph-deploy
+    virtualenv: "{{ venv }}"
+    virtualenv_command: pyvenv
+
+- name: Remove Ceph packages from remote hosts and purge all data.
+  command: ceph-deploy purge {{ all_servers }}
+  args:
+    chdir: /home/{{ ansible_user_id }}/{{ cluster_name }}
+  ignore_errors: yes
+  tags: teardown
+
+- name: Purge any Ceph data from /var/lib/ceph on workers.
+  command: ceph-deploy purgedata {{ all_servers }}
+  args: 
+    chdir: /home/{{ ansible_user_id }}/{{ cluster_name }}
+  ignore_errors: yes
+  tags: teardown
+
+- name: Remove authentication keys from the local directory.
+  command: ceph-deploy forgetkeys
+  args: 
+    chdir: /home/{{ ansible_user_id }}/{{ cluster_name }}
+  ignore_errors: yes
+  tags: teardown
+
+- name: Remove /home/{{ ansible_user_id }}/{{ cluster_name }}.
+  file:
+    path: /home/{{ ansible_user_id }}/{{ cluster_name }}
+    state: absent
+  tags: teardown
+
+- name: Create a directory to save configuration and key files.
+  file:
+    path: /home/{{ ansible_user_id }}/{{ cluster_name }}
+    state: directory
+
+- name: Create {{ cluster_name }} ceph cluster.
+  command: |
+    ceph-deploy new --no-ssh-copykey --public-network {{ public_network }}
+    {{ mon_servers }}
+  args:
+    chdir: /home/{{ ansible_user_id }}/{{ cluster_name }}
+
+- name: Set up ceph monitors.
+  include_tasks: mon.yml
+  tags: mon_tasks
+
+- name: Set up ceph managers.
+  include_tasks: mgr.yml
+  tags: mgr_tasks
+
+- name: Set up ceph osds.
+  include_tasks: osd.yml
+  tags: osd_tasks
+
+- name: Set up ceph mds.
+  include_tasks: mds.yml
+  tags: mds_tasks
+
+- name: Add passwordless sudoer {{ ansible_user_id }}.
+  lineinfile:
+    path: /etc/sudoers.d/{{ ansible_user_id }}
+    line: '{{ ansible_user_id }} ALL=(ALL) NOPASSWD: ALL'
+    state: present
+    mode: 0440
+    create: yes
+    validate: 'visudo -cf %s'
+  become: yes
+  tags: admin
+
+- name: Add ssh authorized keys on deployer.
+  # Need for ceph-deploy admin command
+  authorized_key:
+    user: "{{ ansible_user_id }}"
+    state: present
+    exclusive: True
+    key: "{{ lookup('file', '{{ ssh_pubkey }}') }}"
+  tags: admin
+
+- name: Install ceph common component in {{ inventory_hostname }}
+  command: |
+    ceph-deploy install --common
+        --repo-url {{ repo_url }}
+        --gpg-url {{ gpg_url }}
+        {{ inventory_hostname }}
+  args:
+    chdir: /home/{{ ansible_user_id }}/{{ cluster_name }}
+  tags: admin
+
+- name: Push configuration and client.admin key to {{ inventory_hostname }}
+  command: ceph-deploy admin {{ inventory_hostname }}
+  args:
+    chdir: /home/{{ ansible_user_id }}/{{ cluster_name }}
+  tags: admin
+
+- name: Remove sudoer {{ ansible_user_id }}.
+  file:
+    path: /etc/sudoers.d/{{ ansible_user_id }}
+    state: absent
+  become: yes
+  tags: admin
+
+- name: Create data pool for cephfs.
+  command: ceph osd pool create cephfs_data {{ pg_num }}
+  become: yes
+  tags: admin
+
+- name: Create metadata pool for cephfs.
+  command: ceph osd pool create cephfs_metadata {{ pg_num }}
+  become: yes
+  tags: admin
+
+- name: Create filesystem for cephfs
+  command: ceph fs new {{ fs_name }} cephfs_metadata cephfs_data
+  become: yes
+  tags: admin
+...

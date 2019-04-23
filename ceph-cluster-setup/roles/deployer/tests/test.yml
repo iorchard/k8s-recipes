@@ -1,0 +1,45 @@
+---
+- hosts: deployer
+  vars:
+      ansible_python_interpreter: /usr/bin/python3
+  tasks:
+    - name: install python packages
+      pip:
+        name: setuptools
+        virtualenv: ~/.envs/ansible
+        virtualenv_command: pyvenv
+        state: latest
+      tags: test
+    
+    - name: Display all variables/facts.
+      debug:
+          var: inventory_hostname
+      tags: debug1
+    
+    - name: display osd name.
+      debug:
+        msg: "{{ (100 / osd[0]['db']|length)|int }}"
+      tags: debug2
+
+    - name: show osd create command.
+      debug:
+        msg: |
+          "
+          ceph-deploy osd create --bluestore --data {{ item.0.data[item.1] }} --block-db {{ item.0.db[item.1] }} {{ item.0.name }}
+          "
+      loop: "{{ osd | product(range(0, osd[0].data|length))|list }}"
+      tags: debug5
+
+    - debug: msg="{{ item.0.name }} - {{ item.1 }}"
+      with_subelements:
+        - "{{ osd }}"
+        - data
+      tags: debug6
+
+    - include_tasks: create.yml
+      #loop: [0, 1, 2]
+      loop: "{{ range(0, l_osd|length)|list }}"
+      loop_control:
+        loop_var: idx
+      tags: debug7
+...

@@ -1,0 +1,37 @@
+---
+# tasks file for worker
+- name: Ensure the required packages are installed.
+  apt:
+    name: "{{ worker_pre_pkgs }}"
+    state: latest
+  become: yes
+
+- name: Add passwordless sudoer {{ ansible_user_id }}.
+  lineinfile:
+    path: /etc/sudoers.d/{{ ansible_user_id }}
+    line: '{{ ansible_user_id }} ALL=(ALL) NOPASSWD: ALL'
+    state: present
+    mode: 0440
+    create: yes
+    validate: 'visudo -cf %s'
+  become: yes
+
+- name: Add ssh authorized keys on each worker.
+  authorized_key:
+    user: "{{ ansible_user_id }}"
+    state: present
+    exclusive: True
+    key: "{{ lookup('file', '{{ ssh_pubkey }}') }}"
+
+- name: Create VG {{ db_vg }} with PV {{ db_pv }}.
+  lvg:
+    vg: "{{ db_vg }}"
+    pvs: "{{ db_pv | join(',') }}"
+  become: yes
+
+- name: Call lv_create.yml for each worker.
+  include_tasks: lv_create.yml
+  loop: "{{ range(0, l_osd|length)|list }}"
+  loop_control:
+    loop_var: idx
+...

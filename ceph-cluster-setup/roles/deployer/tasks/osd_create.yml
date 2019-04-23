@@ -1,0 +1,17 @@
+---
+- name: Create data and block.db for {{ osd[idx]['name'] }}
+  # DO NOT use /dev/<vg_name>/<lv_name> for --block-db value.
+  # ceph-volume use blkid to find PARTUUID if it starts with /dev.
+  # use <vg_name>/<lv_name> for --block-db value.
+  command: |
+    ceph-deploy osd create --bluestore
+        --data {{ item }}
+        --block-db {{ db_vg }}/{{ osd[idx]['db'][idx2] }}
+        {{ osd[idx]['name'] }}
+  loop: "{{ osd[idx]['data'] }}"
+  loop_control:
+    index_var: idx2
+  args:
+    chdir: /home/{{ ansible_user_id }}/{{ cluster_name }}
+  tags: osd_tasks
+...

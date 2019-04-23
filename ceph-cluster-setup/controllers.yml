@@ -1,0 +1,7 @@
+---
+# controller master file.
+- hosts: controllers
+  roles:
+    - common
+    - controller
+...

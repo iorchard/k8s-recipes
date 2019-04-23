@@ -1,0 +1,24 @@
+---
+# monitor tasks.
+- name: Install ceph mon packages in {{ mon_servers }}.
+  command: |
+    ceph-deploy install --mon
+    --repo-url {{ repo_url }}
+    --gpg-url {{ gpg_url }}
+    {{ mon_servers }}
+  args:
+    chdir: /home/{{ ansible_user_id }}/{{ cluster_name }}
+  tags: mon_tasks
+
+- name: Deploy the initial monitors and gather the keys.
+  command: ceph-deploy mon create-initial
+  args:
+    chdir: /home/{{ ansible_user_id }}/{{ cluster_name }}
+  tags: mon_tasks
+
+- name: Push configuration and admin key files to monitors.
+  command: ceph-deploy admin {{ mon_servers }}
+  args:
+    chdir: /home/{{ ansible_user_id }}/{{ cluster_name }}
+  tags: mon_tasks
+...

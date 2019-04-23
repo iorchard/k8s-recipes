@@ -1,0 +1,12 @@
+---
+# tasks file for common
+- name: Ensure the required packages are installed.
+  apt:
+    name: "{{ pre_pkgs }}"
+    state: latest
+  become: yes
+
+- name: Set timezone to "{{ timezone }}"
+  timezone:
+    name: "{{ timezone }}"
+

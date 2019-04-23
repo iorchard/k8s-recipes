@@ -1,0 +1,8 @@
+---
+# defaults file for common
+pre_pkgs:
+  - ntp
+  - lsb-release
+  - apt-transport-https
+  - python3-setuptools
+...
