@@ -8,3 +8,7 @@ ceph-builder
 
 Build ceph debian packages for debian 9 (stretch).
 
+ceph-cluster-setup
+-------------------
+
+Set up ceph cluster using ansible playbook.
