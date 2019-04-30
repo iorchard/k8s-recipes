@@ -35,4 +35,4 @@ For example, run a container to build ceph 14.2.0.::
 
 Building ceph takes a long time. 
 My docker machine is a virtual machine with 8 cores, 32G RAM, 100G disk.
-It took one and a half hours to build on my server.
+It took one and a half hours to build on it.

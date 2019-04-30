@@ -30,6 +30,18 @@ There are 3 groups - deployer, controllers, workers.
 Preflight
 ----------
 
+Install pre-requisite packages.::
+
+    $ sudo apt install -y python3-venv
+    
+
+Install ansible in virtualenv.::
+
+    
+    $ pyvenv ~/.envs/ansible
+    $ source ~/.envs/ansible/bin/activate
+    (ansible) $ pip install wheel ansible
+
 Create ssh key pair with passphrase.::
 
     $ ssh-keygen
