@@ -10,12 +10,14 @@ Variables       props.py
 Get Env
     [Tags]      test
     ${envs} =   Get Environment Variables
-    Log         ${envs}     console=True
+    #Log         ${envs}     console=True
 
 Push To Local Mirror
     [Documentation]     Push ceph debian packages to the local mirror.
+    Log         Scping deb files to ${REPO_DIR}     console=True
     Put File    ${DPKG_DIR}/*.deb  ${REPO_DIR}  mode=0644
 
+    Log         Aptly repo add.     console=True
     ${rc} =     Execute Command
     ...     aptly repo add ${REPO_NAME} ${REPO_DIR}/*.deb
     ...     return_stdout=False     return_rc=True

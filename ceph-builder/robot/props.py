@@ -6,7 +6,7 @@ import os
 DPKG_DIR = os.path.join(os.path.abspath('.'), 'debs')
 
 # build 
-VER = '14.2.0'
+VER = '14.2.1'
 DOCKER_IMG = 'ceph-builder'
 
 # push

@@ -35,6 +35,12 @@ have python environment.::
 Build
 ------
 
+Open props.py and Change VER variable as the ceph version you want to build.::
+
+    $ vi props.py
+    ...
+    VER = '14.2.1'
+
 Run build.robot to build ceph in docker container.::
 
     (robot) $ robot -d output build.robot
