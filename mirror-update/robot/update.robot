@@ -46,8 +46,6 @@ Update Local Mirror
     ...     return_stdout=False     return_rc=True
     Should Be Equal     ${rc}       ${0}
     
-    
-
 *** Keywords ***
 Preflight
     Get Environment Variable    REPO_PW
@@ -60,6 +58,9 @@ Cleanup
     ${rc} =     Execute Command
     ...     for snap in $(aptly snapshot list -raw |grep -v ${DATETIME}|sort -r);do aptly snapshot drop $snap;done 
     ...     return_stdout=False     return_rc=True
+    Should Be Equal     ${rc}       ${0}
+
+    ${rc} =     Execute Command     aptly db cleanup
     Should Be Equal     ${rc}       ${0}
 
     Close Connection

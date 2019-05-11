@@ -16,6 +16,9 @@ Build
     ...     docker run --rm -v ${DPKG_DIR}:/debs ${DOCKER_IMG} ${VER} >/dev/null 2>&1
     Should Be Equal As Integers     ${rc}       0
 
+    ${rc} =     Run And Return Rc    sudo chown -R %{USER}:${USER} ${DPKG_DIR}
+    Should Be Equal As Integers     ${rc}       0
+
 *** Keywords ***
 Cleanup
     [Documentation]     Clean up the debris.
