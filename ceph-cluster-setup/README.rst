@@ -12,6 +12,13 @@ the following packages are installed on every machine.
 
 * ssh: required to run playbooks
 * python3: required to run playbooks
+* sshpass: required for ssh connection with password
+
+
+These packages should be installed while running playbook.
+
+* lvm2: required for workers to manage logical volumes.
+* policykit-1: required to set timezone.
 * python3-apt: (optional) required for dry-run (--check option)
 
 The ansible user should be on every machine and have sudo privilege.
@@ -45,6 +52,11 @@ Install ansible in virtualenv.::
 Create ssh key pair with passphrase.::
 
     $ ssh-keygen
+    Generating public/private rsa key pair.
+    Enter file in which to save the key (/home/orchard/.ssh/id_rsa):     
+    Created directory '/home/orchard/.ssh'.
+    Enter passphrase (empty for no passphrase): 
+    Enter same passphrase again: 
 
 Create a vault file for ssh and sudo password.::
 
