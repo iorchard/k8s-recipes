@@ -22,7 +22,16 @@ ceph-admin[1:3]
 [workers]
 ceph[1:3]
 
+[clients]
+ceph-client1
+
 # ceph cluster
 [cluster:children]
 controllers
 workers
+clients
+
+[setup]
+ceph-admin1
+ceph-client1
+

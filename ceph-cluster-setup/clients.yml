@@ -1,0 +1,7 @@
+---
+# client master file.
+- hosts: clients
+  roles:
+    - common
+    - client
+...

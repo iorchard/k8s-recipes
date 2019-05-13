@@ -15,11 +15,11 @@ the following packages are installed on every machine.
 * sshpass: required for ssh connection with password
 
 
-These packages should be installed while running playbook.
+These packages will be installed while running playbook.
 
 * lvm2: required for workers to manage logical volumes.
-* policykit-1: required to set timezone.
-* python3-apt: (optional) required for dry-run (--check option)
+* policykit-1: required to set timezone for all machines.
+* python3-apt: required for dry-run (--check option) for all machines
 
 The ansible user should be on every machine and have sudo privilege.
 
@@ -27,11 +27,12 @@ I'll use a vault for ssh and sudo password.
 
 I'll use passphrase-protected ssh keys to log into remote machines.
 
-There are 3 groups - deployer, controllers, workers.
+There are 5 playbooks - deployer, controllers, workers, clients, setup.
 
 * deployer: the machine to run playbooks.
 * controllers: the machines where controller components (mon, mds, mgr)
   are running.
+* clients: the machines mounting cephfs using ceph-fuse.
 * workers: the machines where osd components are running.
 
 Preflight
@@ -88,8 +89,8 @@ Run playbooks.::
 
 Run the specific playbook.::
 
-    $ ansible-playbook --ask-vault-pass worker.yml
-    $ ansible-playbook --ask-vault-pass controller.yml
+    $ ansible-playbook --ask-vault-pass controllers.yml
+    $ ansible-playbook --ask-vault-pass workers.yml
 
 Tear down the cluster.::
 

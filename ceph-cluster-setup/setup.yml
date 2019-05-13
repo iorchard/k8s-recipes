@@ -1,0 +1,6 @@
+---
+# setup master file.
+- hosts: setup
+  roles:
+    - setup
+...

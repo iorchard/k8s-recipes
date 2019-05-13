@@ -72,5 +72,7 @@ osd:
 l_osd: "{{ osd | map(attribute='name')|list }}"
 osd_servers: "{{ l_osd | join(' ')  }}"
 
-all_servers: "{{ hostvars[inventory_hostname]['groups']['cluster']|join(' ') }}" 
+all_servers: "{{ hostvars[inventory_hostname]['groups']['cluster']|join(' ') }}"
+
+clients: "{{ groups['clients'] | join(' ') }}"
 ...
