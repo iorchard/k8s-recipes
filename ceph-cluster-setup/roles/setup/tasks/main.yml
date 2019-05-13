@@ -1,0 +1,66 @@
+---
+# tasks file for setup
+- name: Check if data pool is already created.
+  shell: ceph osd lspools | grep -q cephfs_data
+  register: lspools_output
+  become: yes
+  when: inventory_hostname in groups['controllers']
+  ignore_errors: true
+
+- name: Create data pool for cephfs
+  command: ceph osd pool create cephfs_data {{ pg_num }}
+  become: yes
+  when: (inventory_hostname in groups['controllers']) and
+        (lspools_output.rc != 0)
+  tags: cephfs_setup
+
+- name: Check if metadata pool is already created.
+  shell: ceph osd lspools | grep -q cephfs_metadata
+  register: lspools_output
+  become: yes
+  when: inventory_hostname in groups['controllers']
+  ignore_errors: true
+
+- name: Create metadata pool for cephfs.
+  command: ceph osd pool create cephfs_metadata {{ pg_num }}
+  become: yes
+  when: (inventory_hostname in groups['controllers']) and
+        (lspools_output.rc != 0)
+  tags: cephfs_setup
+
+- name: Create filesystem for cephfs.
+  command: ceph fs new {{ fs_name }} cephfs_metadata cephfs_data
+  become: yes
+  when: (inventory_hostname in groups['controllers']) and
+        (lspools_output.rc != 0)
+  tags: cephfs_setup
+
+- name: Create directory /srv/{{ cluster_name }}
+  file:
+    path: /srv/{{ cluster_name }}
+    state: directory
+  become: yes
+  when: inventory_hostname in groups['clients']
+  tags: client_setup
+
+- name: Install ceph-fuse.
+  apt:
+    name: ceph-fuse
+    state: present
+  become: yes
+  when: inventory_hostname in groups['clients']
+  tags: client_setup
+
+- name: Check if /srv/{{ cluster_name }} is already mounted.
+  shell: mount | grep -q {{ cluster_name }}
+  register: mount_output
+  ignore_errors: true
+  when: inventory_hostname in groups['clients']
+
+- name: Mount cephfs on /srv/{{ cluster_name }}.
+  command: ceph-fuse -m {{ mon_servers | replace(" ", ",") }} /srv/{{ cluster_name }}
+  become: yes
+  when: (inventory_hostname in groups['clients']) and
+        (mount_output.rc != 0)
+  tags: client_setup
+...

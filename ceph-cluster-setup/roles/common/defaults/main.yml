@@ -5,4 +5,5 @@ pre_pkgs:
   - lsb-release
   - apt-transport-https
   - python3-setuptools
+  - policykit-1
 ...

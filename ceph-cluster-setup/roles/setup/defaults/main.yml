@@ -1,0 +1,7 @@
+---
+# defaults file for setup
+# MDS settings
+# pg_num for mds. (# of osds * 100 / replicas) = round up nearest power of two.
+# 12 * 100 / 3 = 400
+pg_num: 400
+fs_name: swrc-cephfs

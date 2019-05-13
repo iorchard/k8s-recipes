@@ -1,0 +1,18 @@
+---
+# client tasks.
+- name: Install ceph common packages in {{ clients }}.
+  command: |
+    ceph-deploy install --common
+    --repo-url {{ repo_url }}
+    --gpg-url {{ gpg_url }}
+    {{ clients }}
+  args:
+    chdir: /home/{{ ansible_user_id }}/{{ cluster_name }}
+  tags: client_tasks
+
+- name: Push configuration and admin key files to clients.
+  command: ceph-deploy admin {{ clients }}
+  args:
+    chdir: /home/{{ ansible_user_id }}/{{ cluster_name }}
+  tags: client_tasks
+...
