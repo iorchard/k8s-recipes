@@ -12,7 +12,7 @@ Tear Down Ceph Lab
     [Tags]    teardown
     FOR     ${vm}   IN  @{VMS}
         Log     Stop ${vm} and wait for at most 60 seconds.     console=True
-        Run     virsh shutdown ${vm}
+        Run     virsh destroy ${vm}
         Wait Until Keyword Succeeds     60s     5s  Check VM State  ${vm}
 
         Log     Undefine ${vm}     console=True
@@ -33,6 +33,6 @@ Cleanup
 
 Check VM State
     [Arguments]     ${v}
-    ${o} =      Run     virsh domstate ${v}
-    Should Contain      ${o}    shut
+    ${rc}   ${o} =      Run And Return Rc And Output    virsh domstate ${v}
+    Run Keyword If  ${rc} == 0      Should Contain      ${o}    shut
 

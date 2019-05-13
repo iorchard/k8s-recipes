@@ -51,21 +51,28 @@ Set Up Ceph Lab
     [Documentation]     Set up virtual machines for ceph lab.
     [Tags]    setup
     FOR     ${vm}   IN  @{VMS}
-        Log     Copy ${SRC_DIR}/${DEB_IMG} to ${DST_DIR}/${vm}.qcow2     
+        Log     Link ${SRC_DIR}/${DEB_IMG} to ${DST_DIR}/${vm}.qcow2     
         ...     console=True
-        Copy File   ${SRC_DIR}/${DEB_IMG}   ${DST_DIR}/${vm}.qcow2
+        ${rc} =     Run And Return Rc
+        ...     qemu-img create -f qcow2 -b ${SRC_DIR}/${DEB_IMG} ${DST_DIR}/${vm}.qcow2 ${SIZE}G
+        Should Be Equal As Integers     ${rc}   0   
+        #Copy File   ${SRC_DIR}/${DEB_IMG}   ${DST_DIR}/${vm}.qcow2
         ${rc}   ${uuid} =   Run And Return Rc And Output
         ...     cat /proc/sys/kernel/random/uuid
+        Should Be Equal As Integers     ${rc}   0   
         ${rc}   ${mac1} =    Run And Return Rc And Output
         ...     /data/kvm/scripts/macgen.sh
+        Should Be Equal As Integers     ${rc}   0   
         ${rc}   ${mac2} =    Run And Return Rc And Output
         ...     /data/kvm/scripts/macgen.sh
+        Should Be Equal As Integers     ${rc}   0   
         Create Interfaces File      ${IPS}[${vm}]
 
         Log     Run ${VM_MAN}     console=True
-        ${rc} =     Run And Return Rc
+        ${rc}   ${out} =     Run And Return Rc And Output
         ...     ${VM_MAN} -f ${DST_DIR}/${vm}.qcow2 -u ${USERID}
-        Should Be Equal As Integers     ${rc}   0   msg="vm_man failed."
+        Should Be Equal As Integers     ${rc}   0   
+        ...     msg="vm_man failed: ${out}"
 
         Log     Create XML for ${vm}    console=True
         Run Keyword If  "${ROLES}[${vm}]" != "worker"
