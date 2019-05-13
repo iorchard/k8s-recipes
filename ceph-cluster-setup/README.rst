@@ -48,7 +48,8 @@ Install ansible in virtualenv.::
     
     $ pyvenv ~/.envs/ansible
     $ source ~/.envs/ansible/bin/activate
-    (ansible) $ pip install wheel ansible
+    (ansible) $ pip install wheel
+    (ansible) $ pip install ansible
 
 Create ssh key pair with passphrase.::
 

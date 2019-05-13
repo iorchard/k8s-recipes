@@ -1,0 +1,19 @@
+---
+# tasks file for client
+- name: Add passwordless sudoer {{ ansible_user_id }}.
+  lineinfile:
+    path: /etc/sudoers.d/{{ ansible_user_id }}
+    line: '{{ ansible_user_id }} ALL=(ALL) NOPASSWD: ALL'
+    state: present
+    mode: 0440
+    create: yes
+    validate: 'visudo -cf %s'
+  become: yes
+
+- name: Add ssh authorized keys on each client.
+  authorized_key:
+    user: "{{ ansible_user_id }}"
+    state: present
+    exclusive: True
+    key: "{{ lookup('file', '{{ ssh_pubkey }}') }}"
+...
