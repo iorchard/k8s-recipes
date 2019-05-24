@@ -4,6 +4,12 @@ Recipes
 This repo is for all kinds of recipes such as kubernetes, docker, ansible, 
 robot framework, etc.
 
+proxmox-vm-setup
+-----------------
+
+Create and start VM on proxmox server.
+
+
 ceph-builder
 --------------
 
