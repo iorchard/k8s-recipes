@@ -4,6 +4,7 @@ Suite Setup      Preflight
 Suite Teardown   Cleanup
 Library         OperatingSystem
 Library         Process
+Library         SSHLibrary
 Variables       props.py
 
 *** Variables ***
@@ -24,9 +25,9 @@ Check Template
 	Run Keyword If	os.path.exists("${IMG_DIR}/${TMPL}") == False
 	...		Build Template
 
-Set Up Taco Lab
-	[Documentation]		Set up VM for TACO Lab.
-	[Tags]		setup
+Create Taco Lab
+	[Documentation]		Create and start VM for TACO Lab.
+	[Tags]		create
 
 	FOR		${vm}	IN	@{VMS}
 		Log		${vm}: Clone from ${TMPL}.	console=True
@@ -75,6 +76,23 @@ Set Up Taco Lab
 		...		echo "${IPS}[${vm}][0] ${vm}"|sudo tee -a /etc/hosts
 
 		${ID} =		Evaluate	${ID} + 1
+	END
+
+Landing
+	[Documentation]		Set up VM for TACO Lab.
+	[Tags]		setup
+
+	FOR		${vm}	IN	@{VMS}
+		Open Connection		${vm}
+		Login With Public Key	${UID}	${SSHKEY}.pub
+
+		Log		${vm}: Remove cloud-init package.	console=True
+		${output} =		Execute Command		sudo yum remove cloud-init
+
+		Log		${vm}: Set timezone.	console=True
+		${output} =		Execute Command		sudo timedatectl set-timezone ${TIMEZONE}
+
+		Close Connection
 	END
 
 *** Keywords ***

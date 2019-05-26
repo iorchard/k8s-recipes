@@ -14,6 +14,8 @@ DEB_VER = '9.9.1'
 DEB_ARCH = 'amd64'
 DEB_TMPL_ID = 9001
 DEB_TMPL_NAME = 'debian-{}-tmpl'.format(DEB_VER)
+DEB_UID = 'debian'
+
 # centos openstack image 
 # disk total size: 8G
 # Login account: centos
@@ -22,21 +24,25 @@ CENTOS_VER = '7'
 CENTOS_ARCH = 'x86_64'
 CENTOS_TMPL_ID = 9000
 CENTOS_TMPL_NAME = 'centos-{}-tmpl'.format(CENTOS_VER)
+CENTOS_UID = 'centos'
 
+# which OS you choose. DEB or CENTOS?
 IMG_URL = CENTOS_IMG_URL
 VER = CENTOS_VER
 ARCH = CENTOS_ARCH
 TMPL_ID = CENTOS_TMPL_ID
 TMPL_NAME = CENTOS_TMPL_NAME
+UID = CENTOS_UID
 
 POOL = 'jijisa-pool'
 STORAGE = 'local-lvm2'
 VG = 'pve2'
 THINPOOL = 'pve2/data2'
 
-# VM location and size
+# VM info
 IMG_DIR = os.environ.get('HOME', '.') + '/images'
 SSHKEY = os.environ.get('HOME') + '/.ssh/id_rsa'
+TIMEZONE = 'Asia/Seoul'
 NAMESERVER = '8.8.8.8'
 RESIZE = 100    # root partition resize in GiB
 OSD_NUM = 3     # The number of osd disks.
