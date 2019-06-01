@@ -51,16 +51,16 @@
   when: inventory_hostname in groups['clients']
   tags: client_setup
 
-- name: Check if /srv/{{ cluster_name }} is already mounted.
-  shell: mount | grep -q {{ cluster_name }}
-  register: mount_output
-  ignore_errors: true
-  when: inventory_hostname in groups['clients']
-
-- name: Mount cephfs on /srv/{{ cluster_name }}.
-  command: ceph-fuse -m {{ mon_servers | replace(" ", ",") }} /srv/{{ cluster_name }}
-  become: yes
-  when: (inventory_hostname in groups['clients']) and
-        (mount_output.rc != 0)
-  tags: client_setup
+#- name: Check if /srv/{{ cluster_name }} is already mounted.
+#  shell: mount | grep -q {{ cluster_name }}
+#  register: mount_output
+#  ignore_errors: true
+#  when: inventory_hostname in groups['clients']
+#
+#- name: Mount cephfs on /srv/{{ cluster_name }}.
+#  command: ceph-fuse -m {{ mon_servers | replace(' ', ',') }} /srv/{{ cluster_name }}
+#  become: yes
+#  when: (inventory_hostname in groups['clients']) and
+#        (mount_output.rc != 0)
+#  tags: client_setup
 ...
