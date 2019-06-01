@@ -18,6 +18,7 @@ SIZE = 10   # OSD disk size in GiB.
 
 # Ceph cluster machine list.
 VMS = [
+        'ceph-deployer',
         'ceph-admin1',
         'ceph-admin2',
         'ceph-admin3',
@@ -29,6 +30,7 @@ VMS = [
 
 # Ceph machine role list.
 ROLES = {
+        'ceph-deployer': 'deployer',
         'ceph-admin1': 'controller',
         'ceph-admin2': 'controller',
         'ceph-admin3': 'controller',
@@ -39,6 +41,7 @@ ROLES = {
 }
 # Ceph cluster machine IP list.
 IPS = {
+        'ceph-deployer': ['10.5.0.50', '192.168.24.50'],
         'ceph-admin1': ['10.5.0.51', '192.168.24.51'],
         'ceph-admin2': ['10.5.0.52', '192.168.24.52'],
         'ceph-admin3': ['10.5.0.53', '192.168.24.53'],
