@@ -2,8 +2,8 @@
 import os
 
 # VM ID (The first ID only)
-ID = 9010
-PREFIX = 'taco1-'   # hostname prefix
+ID = 9015
+PREFIX = 'jenkins-'   # hostname prefix
 
 POOL = 'jijisa-pool'
 STORAGE = 'local-lvm2'
@@ -19,26 +19,26 @@ OSD_SIZE = 50   # OSD disk size in GiB for VM with storage role
 # machine list.
 VMS = [
         PREFIX + 'master',
-        PREFIX + 'node',
+        PREFIX + 'agent',
 ]
 
 # Roles
 ROLES = {
         PREFIX + 'master': ['control'],
-        PREFIX + 'node': ['node'],
+        PREFIX + 'agent': ['agent'],
 }
 
 CORES = {
-        PREFIX + 'master': 16,
-        PREFIX + 'node': 32,
+        PREFIX + 'master': 8,
+        PREFIX + 'agent': 8,
 }
 MEM = {
-        PREFIX + 'master': 16*1024,
-        PREFIX + 'node': 32*1024,
+        PREFIX + 'master': 8*1024,
+        PREFIX + 'agent': 8*1024,
 }
 DISK = {
         PREFIX + 'master': 50,
-        PREFIX + 'node': 100,
+        PREFIX + 'agent': 50,
 }
 
 # IP list
@@ -51,39 +51,47 @@ IP = ID - 9000
 IPS = {
         PREFIX + 'master': [EXT_NET + '.' + str(IP), 
                             INT_NET + '.' + str(IP)],
-        PREFIX + 'node': [EXT_NET + '.' + str(IP+1), 
+        PREFIX + 'agent': [EXT_NET + '.' + str(IP+1), 
                             INT_NET + '.' + str(IP+1)],
 }
+
+# which OS you choose. DEB or CENTOS?
+OS = 'DEB'
 
 # Do not edit the below!!!
 # debian openstack image 
 # disk total size: 2G
 # Login account: debian
-DEB_IMG_URL = 'http://cdimage.debian.org/cdimage/openstack/current'
-DEB_VER = '9.9.1'
+#DEB_IMG_URL = 'http://cdimage.debian.org/cdimage/openstack/current'
+#DEB_VER = '9.9.1-20190515'
+DEB_IMG_URL = 'http://cdimage.debian.org/cdimage/openstack/testing'
+DEB_VER = 'testing'
 DEB_ARCH = 'amd64'
 DEB_TMPL_ID = 9001
 DEB_TMPL_NAME = 'debian-{}-tmpl'.format(DEB_VER)
 DEB_UID = 'debian'
+DEB_TMPL = 'debian-{}-openstack-{}.qcow2'.format(DEB_VER, DEB_ARCH)
 
 # centos openstack image 
 # disk total size: 8G
 # Login account: centos
-CENTOS_IMG_URL = 'http://cloud.centos.org/centos/7/images'
 CENTOS_VER = '7'
+CENTOS_IMG_URL = 'http://cloud.centos.org/centos/{}/images'.format(CENTOS_VER)
 CENTOS_ARCH = 'x86_64'
 CENTOS_TMPL_ID = 9000
 CENTOS_TMPL_NAME = 'centos-{}-tmpl'.format(CENTOS_VER)
 CENTOS_UID = 'centos'
+CENTOS_TMPL = 'CentOS-{}-{}-GenericCloud.qcow2'.format(CENTOS_VER, CENTOS_ARCH)
 
-# which OS you choose. DEB or CENTOS?
-IMG_URL = CENTOS_IMG_URL
-VER = CENTOS_VER
-ARCH = CENTOS_ARCH
-TMPL_ID = CENTOS_TMPL_ID
-TMPL_NAME = CENTOS_TMPL_NAME
-UID = CENTOS_UID
+IMG_URL = eval('{}_IMG_URL'.format(OS))
+VER = eval('{}_VER'.format(OS))
+ARCH = eval('{}_ARCH'.format(OS))
+TMPL_ID = eval('{}_TMPL_ID'.format(OS))
+TMPL_NAME = eval('{}_TMPL_NAME'.format(OS))
+UID = eval('{}_UID'.format(OS))
+TMPL = eval('{}_TMPL'.format(OS))
 
+#print(IMG_URL, VER, ARCH, TMPL_ID, TMPL_NAME, UID, TMPL)
 # VM info
 IMG_DIR = os.environ.get('HOME', '.') + '/images'
 SSHKEY = os.environ.get('HOME') + '/.ssh/id_rsa'
