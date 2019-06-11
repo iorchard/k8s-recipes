@@ -1,0 +1,10 @@
+---
+# client master file.
+- hosts: clients
+  roles:
+    - common
+    - client
+    - role: setup
+      tags:
+        - client_setup
+...

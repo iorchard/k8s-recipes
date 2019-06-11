@@ -97,3 +97,16 @@ Tear down the cluster.::
 
     $ ansible-playbook --ask-vault-pass site.yml --tags=teardown
 
+To add another ceph client
+----------------------------
+
+There is an ansible playbook for adding ceph client components -
+clients_setup.yml.
+
+If you want to install ceph client on <client-a>, run this playbook.::
+
+    $ ansible-playbook --ask-vault-pass clients_setup.yml \
+            --limit=<client-a>
+
+Now ceph client components are installed on <client-a>.
+Go to <client-a> and mount cephfs.
