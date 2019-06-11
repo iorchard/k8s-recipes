@@ -1,14 +1,11 @@
 *** Settings ***
-Documentation    Build taco cluster for a lab.
+Documentation    Build virtual machines for a lab.
 Suite Setup      Preflight
 Suite Teardown   Cleanup
 Library         OperatingSystem
 Library         Process
 Library         SSHLibrary
 Variables       props.py
-
-*** Variables ***
-${TMPL}      CentOS-${VER}-${ARCH}-GenericCloud.qcow2
 
 *** Tasks ***
 Test
@@ -18,15 +15,15 @@ Test
         ${ID} =        Evaluate    ${ID} + 1
     END
 
-Check Template 
+Take Off
     [Documentation]        Check a template VM and Build it if necessary
     [Tags]        template
     Log        Check if ${TMPL} exists.    console=True
     Run Keyword If    os.path.exists("${IMG_DIR}/${TMPL}") == False
     ...        Build Template
 
-Create Taco Lab
-    [Documentation]        Create and start VM for TACO Lab.
+Flying
+    [Documentation]        Create and start VM.
     [Tags]        create
 
     FOR        ${vm}    IN    @{VMS}
@@ -73,26 +70,30 @@ Create Taco Lab
         ${rc} =        Run And Return Rc
         ...        grep -q "${IPS}[${vm}][0].*${vm}" /etc/hosts
         Run Keyword If    ${rc} != 0        Run 
-        ...        echo "${IPS}[${vm}][0] ${vm}"|sudo tee -a /etc/hosts
+        ...   echo "${IPS}[${vm}][0] ${vm} # ${OS}"|sudo tee -a /etc/hosts
 
         ${ID} =        Evaluate    ${ID} + 1
     END
 
 Landing
-    [Documentation]        Set up VM for TACO Lab.
+    [Documentation]        Set up VM.
     [Tags]        setup
 
     FOR        ${vm}    IN    @{VMS}
         
         Open Connection        ${vm}    timeout=60s
-        Wait Until Keyword Succeeds		1 min	10 sec
-		...		Login With Public Key    ${UID}    ${SSHKEY}
+        Wait Until Keyword Succeeds        2 min    10 sec
+        ...    Login With Public Key    ${UID}    ${SSHKEY}
 
-        Log        ${vm}: Remove cloud-init package.    console=True
-        ${output} =        Execute Command        sudo yum remove -y cloud-init
+        Log    ${vm}: Remove cloud-init package.    console=True
+        Run Keyword If    "${OS}" == 'CENTOS'
+        ...    Execute Command    sudo yum remove -y cloud-init
+        ...    ELSE IF    "${OS}" == 'DEB'
+        ...    Execute Command    sudo apt remove --purge -y cloud-init
 
         Log        ${vm}: Set timezone.    console=True
-        ${output} =        Execute Command        sudo timedatectl set-timezone ${TIMEZONE}
+        ${output} =   Execute Command   
+        ...        sudo timedatectl set-timezone ${TIMEZONE}
 
         Close Connection
     END
@@ -111,14 +112,18 @@ Cleanup
 
 Build Template
     Log        Get an image from ${IMG_URL}/${TMPL}.    console=True
-    ${rc} =        Run And Return Rc
-    ...        wget -qO ${IMG_DIR}/${TMPL}.xz ${IMG_URL}/${TMPL}.xz
+    ${rc} =    Run Keyword If    "${OS}" == 'CENTOS'
+    ...    Run And Return Rc
+    ...    wget -qO ${IMG_DIR}/${TMPL}.xz ${IMG_URL}/${TMPL}.xz
+    ...    ELSE IF    "${OS}" == 'DEB'
+    ...    Run And Return Rc
+    ...    wget -qO ${IMG_DIR}/${TMPL} ${IMG_URL}/${TMPL}
     Should Be Equal As Integers        ${rc}    0
     
     Log        Uncompress the image.    console=True
-    ${rc} =        Run And Return Rc
-    ...        xz --decompress ${IMG_DIR}/${TMPL}.xz
-    Should Be Equal As Integers        ${rc}    0
+    ${rc} =    Run Keyword If    "${OS}" == 'CENTOS'
+    ...    Run And Return Rc
+    ...    xz --decompress ${IMG_DIR}/${TMPL}.xz
 
     Log        Create a VM.    console=True
     ${rc} =        Run And Return Rc
@@ -141,23 +146,32 @@ Build Template
     Should Be Equal As Integers        ${rc}    0
 
     Log        Fix two caveats of a template.        console=True
+    Fix Caveats
+
+Fix Caveats
+    [Documentation]    Fix caveats of a centos template.
+    Log    Set activation skip to no for base-${TMPL_ID}-disk-1
     ${rc} =        Run And Return Rc
-    ...        sudo kpartx -av /dev/${VG}/base-${TMPL_ID}-disk-1
+    ...        sudo lvchange -kn -ay ${VG}/base-${TMPL_ID}-disk-1
+    Should Be Equal As Integers        ${rc}    0
+
+    ${rc} =        Run And Return Rc
+    ...        sudo kpartx -as /dev/${VG}/base-${TMPL_ID}-disk-1
     Should Be Equal As Integers        ${rc}    0
     ${rc} =        Run And Return Rc
     ...        sudo mount /dev/mapper/${VG}-base--${TMPL_ID}--disk--1p1 /mnt
     Should Be Equal As Integers        ${rc}    0
     ${rc} =        Run And Return Rc
-    ...        echo 'fqdn: ""' | sudo tee -a /mnt/etc/cloud.cfg
+    ...        echo 'fqdn: ""' | sudo tee -a /mnt/etc/cloud/cloud.cfg
     Should Be Equal As Integers        ${rc}    0
     ${rc} =        Run And Return Rc
-    ...        echo '' | sudo tee -a /mnt/etc/resolv.conf
+    ...        echo 'nameserver 8.8.8.8' | sudo tee /mnt/etc/resolv.conf
     Should Be Equal As Integers        ${rc}    0
     ${rc} =        Run And Return Rc
     ...        sudo umount /mnt
     Should Be Equal As Integers        ${rc}    0
     ${rc} =        Run And Return Rc
-    ...        sudo kpartx -dv /dev/${VG}/base-${TMPL_ID}-disk-1
+    ...        sudo kpartx -d /dev/${VG}/base-${TMPL_ID}-disk-1
     Should Be Equal As Integers        ${rc}    0
 
 Create OSD Disks
