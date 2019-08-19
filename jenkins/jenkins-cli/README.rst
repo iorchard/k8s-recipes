@@ -1,12 +1,15 @@
 jenkins-cli
 ============
 
+Get jenkins-cli.jar binary from your jenkins server.::
+
+   $ wget http://<JENKINS_URL>/jnlpJars/jenkins-cli.jar
+
 Build jenkins-cli image.::
 
     $ docker build -t jenkins-cli .
     
-
-Go to jenkins and create your api token.
+Go to jenkins server and create your api token.
 
 #. Log into Jenkins.
 #. Click your name at the upper-right corner.
@@ -16,7 +19,7 @@ Go to jenkins and create your api token.
 
 Create env file.::
 
-   $ vi myenv
+   $ vi ~/.jenkins.env
    JENKINS_URL=<jenkins_url>
    JENKINS_USER_ID=<jenkins_user_id>
    JENKINS_API_TOKEN=<your_api_token>
@@ -30,7 +33,6 @@ Create alias and source it.::
 
 Run jenkins-cli.::
 
-   $ jcli help
    $ jcli version
    2.176.2
 
